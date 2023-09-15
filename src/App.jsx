@@ -1,6 +1,7 @@
 import React from "react";
-import Axios from "axios";
 import { useEffect } from "react";
+import Instance from "./api_instance";
+// import POsts from "./Posts"
 
 export default function App() {
   const [posts, setPosts] = React.useState([]);
@@ -9,27 +10,44 @@ export default function App() {
   const [isEditing, setEditing] = React.useState(false);
   const [updatedPost, setUpdatedPost] = React.useState({ title: "", body: "" });
 
-  const getPosts = async () => {
-    try {
-      const response = await Axios.get(
-        "https://jsonplaceholder.typicode.com/posts"
-      );
-      setPosts(response.data);
-    } catch (error) {
-      console.error("Error getting posts:", error);
-    }
-  };
-
   useEffect(() => {
+    //abort controller;
+    const abortCont = new AbortController(); //we can associate it with axios get method and stop it
+    const signal = abortCont.signal;
+
+    const getPosts = async () => {
+      try {
+        const response = await Instance({
+          url: "/posts/",
+          method: "get",
+          signal, //pass signal to axios request
+
+          // data:data
+        });
+
+        setPosts(response.data);
+      } catch (error) {
+        console.error("Error getting posts:", error);
+      }
+    };
+
     getPosts();
+
+    //cleanup function
+    return () => {
+      abortCont.abort();
+    }; //cancel the request when the component unmounts
+
+    //we do cleanup so our state is not changed
   }, []);
 
   const createPost = async () => {
     try {
-      const response = await Axios.post(
-        "https://jsonplaceholder.typicode.com/posts",
-        newPost
-      );
+      const response = await Instance({
+        url: "/posts/",
+        method: "post",
+        data: newPost,
+      });
 
       setPosts((prevPosts) => [...prevPosts, response.data]);
 
@@ -41,9 +59,10 @@ export default function App() {
 
   const handleUpdate = async (postId) => {
     try {
-      const response = await Axios.get(
-        `https://jsonplaceholder.typicode.com/posts/${postId}`
-      );
+      const response = await Instance({
+        url: `/posts/${postId}`,
+        method: "get",
+      });
       const postToUpdate = response.data;
       setUpdatedPost(postToUpdate);
       setEditing(true);
@@ -54,10 +73,11 @@ export default function App() {
 
   const savePost = async () => {
     try {
-      const response = await Axios.put(
-        `https://jsonplaceholder.typicode.com/posts/${updatedPost.id}`,
-        updatedPost
-      );
+      const response = await Instance({
+        url: `/posts/${updatedPost.id}`,
+        method: "put",
+        data: updatedPost,
+      });
 
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
@@ -74,9 +94,11 @@ export default function App() {
 
   const handleDelete = async (postId) => {
     try {
-      await Axios.delete(
-        `https://jsonplaceholder.typicode.com/posts/${postId}`
-      );
+      await Instance({
+        url: "/posts/postId",
+        method: "delete",
+        // data:
+      });
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     } catch (error) {
       console.error("Error deleting post:", error);
