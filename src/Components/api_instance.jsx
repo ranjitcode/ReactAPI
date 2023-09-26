@@ -1,6 +1,7 @@
 import Axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 const instance = Axios.create({
-  baseURL: "https://jsonplaceholder.typicode.com",
+  baseURL,
 });
 export default instance;
