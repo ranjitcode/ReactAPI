@@ -4,9 +4,16 @@ import Instance from "./api_instance";
 import { AppContext } from "../App";
 
 export default function Post(props) {
-  const { setUpdatedPost, setEditing } = useContext(AppContext);
-  const setPosts = props.setPosts;
+  const {
+    setUpdatedPost,
+    setEditing,
+    setPosts,
+    disableButton,
+    setDisableButton,
+  } = useContext(AppContext);
+
   const handleDelete = async (postId) => {
+    setDisableButton(true);
     try {
       await Instance({
         url: `/posts/${postId}`,
@@ -14,8 +21,12 @@ export default function Post(props) {
         // data:
       });
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      setDisableButton(false);
+      alert("post successfully deleted");
     } catch (error) {
       console.error("Error deleting post:", error);
+      setDisableButton(false);
+      alert("failed to delete post");
     }
   };
 
@@ -42,7 +53,9 @@ export default function Post(props) {
       <button onClick={() => handleUpdate(props.id)}>
         <Link to="/add">Update</Link>
       </button>
-      <button onClick={() => handleDelete(props.id)}>Delete</button>
+      <button onClick={() => handleDelete(props.id)} disabled={disableButton}>
+        {disableButton ? "processing..." : "Delete"}
+      </button>
     </>
   );
 }

@@ -8,8 +8,9 @@ import AddPost from "./Components/AddPost";
 export const AppContext = createContext();
 export default function App() {
   const [posts, setPosts] = useState([]); //empty array for saving an array list
-  const [isEditing, setEditing] = React.useState(false);
-  const [updatedPost, setUpdatedPost] = React.useState({ title: "", body: "" });
+  const [isEditing, setEditing] = useState(false);
+  const [updatedPost, setUpdatedPost] = useState({ title: "", body: "" });
+  const [disableButton, setDisableButton] = useState(false);
 
   const errorHandler = (error, errorInfo) => {
     console.log("logging", error, errorInfo);
@@ -25,6 +26,8 @@ export default function App() {
             setEditing,
             updatedPost,
             setUpdatedPost,
+            disableButton,
+            setDisableButton,
           }}
         >
           <Routes>

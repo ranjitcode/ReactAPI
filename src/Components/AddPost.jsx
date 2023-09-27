@@ -11,13 +11,21 @@ export default function AddPost() {
     setEditing,
     updatedPost,
     setUpdatedPost,
+    disableButton,
+    setDisableButton,
   } = useContext(AppContext);
   const [newPost, setNewPost] = useState({ title: "", body: "" });
 
   const navigate = useNavigate();
 
   const createPost = async () => {
+    setDisableButton(true);
     try {
+      if (!newPost.title || !newPost.body) {
+        alert("Please fill in both Title and Body fields.");
+        setDisableButton(false);
+        return;
+      }
       const response = await Instance({
         url: "/posts/",
         method: "post",
@@ -25,13 +33,18 @@ export default function AddPost() {
       });
       setPosts([...posts, response.data]);
       setNewPost({ title: "", body: "" });
+      setDisableButton(false);
+      alert("post successfully created, click ok to proceed");
       navigate("/");
     } catch (error) {
       console.log("Error creating posts " + error);
+      setDisableButton(false);
+      alert("error creating new post, click ok to try again");
     }
   };
 
   const savePost = async () => {
+    setDisableButton(true);
     try {
       const response = await Instance({
         url: `/posts/${updatedPost.id}`,
@@ -45,10 +58,14 @@ export default function AddPost() {
       );
       // Clear the editing state and reset the updatedPost state
       setEditing(false);
+      setDisableButton(false);
       setUpdatedPost({ title: "", body: "" });
+      alert("post successfully updated, click ok to proceed");
       navigate("/");
     } catch (error) {
       console.error("Error updating post: ", error);
+      setDisableButton(false);
+      alert("error updating post, click ok to try again");
     }
   };
 
@@ -73,7 +90,9 @@ export default function AddPost() {
               setUpdatedPost({ ...updatedPost, body: e.target.value })
             }
           />
-          <button onClick={savePost}>Save</button>
+          <button onClick={savePost} disabled={disableButton}>
+            {disableButton ? "Saving" : "Save"}
+          </button>
         </div>
       ) : (
         <div>
@@ -91,7 +110,9 @@ export default function AddPost() {
             value={newPost.body}
             onChange={(e) => setNewPost({ ...newPost, body: e.target.value })}
           ></input>
-          <button onClick={createPost}>Save</button>
+          <button onClick={createPost} disabled={disableButton}>
+            {disableButton ? "Saving" : "Save"}
+          </button>
         </div>
       )}
     </div>
